@@ -15,5 +15,11 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    public String getOrderStatus(Long orderId) {
+        return orderRepository.findById(orderId).orElseThrow(
+                () -> new RuntimeException(String.format("order with id %d not found.", orderId))
+        ).getStatus().toString();
+    }
+
 
 }
