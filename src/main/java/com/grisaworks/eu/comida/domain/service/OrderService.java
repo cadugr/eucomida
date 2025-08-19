@@ -1,5 +1,6 @@
 package com.grisaworks.eu.comida.domain.service;
 
+import com.grisaworks.eu.comida.domain.exception.EntityNotFoundException;
 import com.grisaworks.eu.comida.domain.model.Order;
 import com.grisaworks.eu.comida.domain.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,7 @@ public class OrderService {
 
     public String getOrderStatus(Long orderId) {
         return orderRepository.findById(orderId).orElseThrow(
-                () -> new RuntimeException(String.format("order with id %d not found.", orderId))
+                () -> new EntityNotFoundException(String.format("order with id %d not found.", orderId))
         ).getStatus().toString();
     }
 
