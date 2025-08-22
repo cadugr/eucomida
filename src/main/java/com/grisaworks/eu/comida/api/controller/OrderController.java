@@ -5,8 +5,12 @@ import com.grisaworks.eu.comida.api.dto.OrderCreateDto;
 import com.grisaworks.eu.comida.api.dto.OrderResponseDto;
 import com.grisaworks.eu.comida.domain.model.Order;
 import com.grisaworks.eu.comida.domain.service.OrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -18,13 +22,22 @@ public class OrderController implements OrderControllerOpenApi {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public OrderResponseDto create(@RequestBody OrderCreateDto orderDto) {
+    public EntityModel<OrderResponseDto> create(@Valid @RequestBody OrderCreateDto orderDto) {
        Order toSave = orderDto.toEntity();
-       return OrderResponseDto.fromEntity(orderService.save(toSave));
+       OrderResponseDto response = OrderResponseDto.fromEntity(orderService.save(toSave));
+
+        EntityModel<OrderResponseDto> orderResponseModel = EntityModel.of(response);
+        orderResponseModel.add(
+                WebMvcLinkBuilder.linkTo(
+                        WebMvcLinkBuilder.methodOn(OrderController.class)
+                                .getOrderStatus(response.getId())
+                ).withRel("order-status")
+        );
+        return orderResponseModel;
     }
 
     @GetMapping("{orderId}/status")
-    public String getOrderStatus(@PathVariable Long orderId) {
-        return orderService.getOrderStatus(orderId);
+    public ResponseEntity<String> getOrderStatus(@PathVariable Long orderId) {
+        return ResponseEntity.ok(orderService.getOrderStatus(orderId));
     }
 }
