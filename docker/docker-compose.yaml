@@ -14,6 +14,17 @@ services:
       - mysql_data_aula:/var/lib/mysql
 #    networks:
 #      - eucomida-network
-
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: no
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbitmq
+      RABBITMQ_DEFAULT_PASS: rabbitmq
+    volumes:
+      - eucomida-rabbitmq:/var/lib/rabbitmq/
 volumes:
   mysql_data_aula:
+  eucomida-rabbitmq:

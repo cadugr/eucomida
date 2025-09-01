@@ -5,3 +5,8 @@ spring:
     password: eucomida_pass
   jpa:
     show-sql: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: rabbitmq
+    password: rabbitmq
