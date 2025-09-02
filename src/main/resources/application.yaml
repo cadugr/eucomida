@@ -10,3 +10,5 @@ spring:
     port: 5672
     username: rabbitmq
     password: rabbitmq
+  flyway:
+    locations: classpath:db/migration,classpath:db/testdata
