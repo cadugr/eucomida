@@ -43,9 +43,8 @@ public class ApiExceptionHandler {
         problemDetail.setType(URI.create("/errors/validation-error"));
 
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(error -> {
-            errors.put(error.getField(), error.getDefaultMessage());
-        });
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+            errors.put(error.getField(), error.getDefaultMessage()));
 
         problemDetail.setProperty("properties", errors);
 
