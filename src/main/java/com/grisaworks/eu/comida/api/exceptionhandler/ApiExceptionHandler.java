@@ -1,8 +1,10 @@
 package com.grisaworks.eu.comida.api.exceptionhandler;
 
 import com.grisaworks.eu.comida.domain.exception.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -21,6 +23,18 @@ public class ApiExceptionHandler {
         problemDetail.setTitle("Internal Server Error");
         problemDetail.setDetail(ex.getMessage());
         problemDetail.setType(URI.create("/errors/internal-server-error"));
+        return problemDetail;
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ProblemDetail handleAuthorizationDeniedException(AuthorizationDeniedException exception,
+                                                            HttpServletRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+
+        problemDetail.setTitle("Access Denied");
+        problemDetail.setType(URI.create("/errors/access-denied"));
+        problemDetail.setDetail("User does not have access to the resource: " + request.getRequestURI());
+
         return problemDetail;
     }
 

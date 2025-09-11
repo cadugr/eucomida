@@ -11,6 +11,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class OrderController implements OrderControllerOpenApi {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('CREATE_ORDER')")
     public EntityModel<OrderResponseDto> create(@Valid @RequestBody OrderCreateDto orderDto) {
        Order toSave = orderDto.toEntity();
        OrderResponseDto response = OrderResponseDto.fromEntity(orderService.save(toSave));
@@ -37,6 +39,7 @@ public class OrderController implements OrderControllerOpenApi {
     }
 
     @GetMapping("{orderId}/status")
+    @PreAuthorize("hasAuthority('CONSULT_ORDER_STATUS')")
     public ResponseEntity<String> getOrderStatus(@PathVariable Long orderId) {
         return ResponseEntity.ok(orderService.getOrderStatus(orderId));
     }
