@@ -12,10 +12,16 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data_aula:/var/lib/mysql
-#    networks:
-#      - eucomida-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - eucomida-network
   rabbitmq:
     image: rabbitmq:3-management
+    container_name: rabbitmq
     restart: no
     ports:
       - 5672:5672
@@ -25,6 +31,34 @@ services:
       RABBITMQ_DEFAULT_PASS: rabbitmq
     volumes:
       - eucomida-rabbitmq:/var/lib/rabbitmq/
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - eucomida-network
+  eu-comida-app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: eu-comida-app
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - eucomida-network
+
 volumes:
   mysql_data_aula:
   eucomida-rabbitmq:
+
+networks:
+  eucomida-network:
+    driver: bridge
