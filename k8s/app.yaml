@@ -22,8 +22,8 @@ spec:
         command: ['sh', '-c', 'until nc -z -w 2 rabbitmq-service 5672; do echo "waiting for rabbitmq..."; sleep 2; done;']
       containers:
       - name: eu-comida-app
-        image: # preencher com a imagem que deve ser contruída e enviada para o acr na Azure.
-        imagePullPolicy: IfNotPresent
+        image: grisaworks/eu-comida:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         env:
