@@ -22,7 +22,7 @@ spec:
         command: ['sh', '-c', 'until nc -z -w 2 rabbitmq-service 5672; do echo "waiting for rabbitmq..."; sleep 2; done;']
       containers:
       - name: eu-comida-app
-        image: grisaworks/eu-comida:latest
+        image: cadugr/eu-comida:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080

@@ -1,0 +1,27 @@
+# ArgoCD Application para a stack "eu-comida" (app + MySQL + RabbitMQ).
+# Este manifesto é aplicado UMA VEZ diretamente no cluster (namespace argocd).
+# A partir daí, o ArgoCD passa a sincronizar automaticamente tudo que estiver
+# em k8s/ neste repositório (branch main) — o repo é a fonte de verdade.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eu-comida
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/cadugr/eucomida.git
+    targetRevision: main
+    path: k8s
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: eucomida
+
+  syncPolicy:
+    automated:
+      prune: true      # remove do cluster recursos removidos do Git
+      selfHeal: true    # reverte mudanças manuais feitas direto no cluster
+    syncOptions:
+      - CreateNamespace=true   # cria o namespace "eucomida" automaticamente
