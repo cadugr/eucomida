@@ -1,0 +1,39 @@
+# ArgoCD Application para o componente RabbitMQ (PVC + Deployment + Services).
+# Este manifesto é aplicado UMA VEZ diretamente no cluster (namespace argocd).
+# A partir daí, o ArgoCD passa a sincronizar automaticamente k8s/rabbitmq.yaml
+# neste repositório (branch main) — o repo é a fonte de verdade.
+#
+# Separado da Application do app porque este componente é STATEFUL (possui
+# PersistentVolumeClaim) e raramente muda depois de configurado. prune:false
+# evita que uma remoção acidental de k8s/rabbitmq.yaml no Git delete o
+# Deployment e o PVC do broker — em caso de dúvida, prefira desativar o sync
+# automático via UI/CLI a confiar em prune aqui.
+#
+# Destino é o namespace "eucomida-infra", separado do namespace "eucomida"
+# (onde o app roda) — um `kubectl delete namespace eucomida` acidental não
+# afeta o broker, e RBAC/NetworkPolicy podem restringir esse namespace à parte.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eu-comida-rabbitmq
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/cadugr/eucomida.git
+    targetRevision: main
+    path: k8s
+    directory:
+      include: "rabbitmq.yaml"
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: eucomida-infra
+
+  syncPolicy:
+    automated:
+      prune: false      # protege o PVC/Deployment de remoção acidental via Git
+      selfHeal: true     # reverte mudanças manuais feitas direto no cluster
+    syncOptions:
+      - CreateNamespace=true   # cria o namespace "eucomida-infra" automaticamente

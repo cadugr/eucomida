@@ -13,13 +13,16 @@ spec:
       labels:
         app: eu-comida-app
     spec:
+      # MySQL e RabbitMQ vivem no namespace "eucomida-infra" (separado deste
+      # namespace "eucomida"), por isso o FQDN cross-namespace abaixo em vez
+      # do nome curto do Service.
       initContainers:
       - name: wait-for-mysql
         image: busybox:1.36
-        command: ['sh', '-c', 'until nc -z -w 2 mysql-service 3306; do echo "waiting for mysql..."; sleep 2; done;']
+        command: ['sh', '-c', 'until nc -z -w 2 mysql-service.eucomida-infra.svc.cluster.local 3306; do echo "waiting for mysql..."; sleep 2; done;']
       - name: wait-for-rabbitmq
         image: busybox:1.36
-        command: ['sh', '-c', 'until nc -z -w 2 rabbitmq-service 5672; do echo "waiting for rabbitmq..."; sleep 2; done;']
+        command: ['sh', '-c', 'until nc -z -w 2 rabbitmq-service.eucomida-infra.svc.cluster.local 5672; do echo "waiting for rabbitmq..."; sleep 2; done;']
       containers:
       - name: eu-comida-app
         image: cadugr/eu-comida:latest
