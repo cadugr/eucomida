@@ -1,0 +1,41 @@
+name: CD
+
+# Dispara SOMENTE em push na main (diferente do CI, que também roda em
+# branches de feature) — igual ao job build-and-push do CI, CD só faz
+# sentido contra o estado "oficial" do repositório.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "argocd/**"
+      - ".github/workflows/cd.yml"
+  workflow_dispatch: {}
+
+env:
+  DO_CLUSTER_NAME: argocd
+
+jobs:
+  apply-argocd-applications:
+    name: Aplica as Applications do ArgoCD no cluster
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Autentica no doctl (Digital Ocean)
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Obtém o kubeconfig do cluster
+        run: doctl kubernetes cluster kubeconfig save ${{ env.DO_CLUSTER_NAME }}
+
+      # As Applications aqui aplicadas são só a "porta de entrada" (bootstrap)
+      # do ArgoCD. A partir daí, é o próprio ArgoCD que sincroniza k8s/ via
+      # GitOps pull — este workflow nunca aplica nada de k8s/ diretamente.
+      - name: Aplica as Applications (argocd/)
+        run: kubectl apply -f argocd/
+
+      - name: Mostra o status das Applications
+        run: kubectl get applications -n argocd -o wide
