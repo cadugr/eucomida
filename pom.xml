@@ -86,6 +86,13 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Banco em memória usado apenas nos testes, para isolar o contexto
+		     do Spring de dependências externas (MySQL/RabbitMQ) no CI. -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

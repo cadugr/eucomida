@@ -7,7 +7,11 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
+// Desativado no perfil "test" (ver src/test/resources/application.yml) para
+// que os testes não dependam de um broker RabbitMQ real.
+@Profile("!test")
 @Configuration
 public class RabbitMQConfig {
 
