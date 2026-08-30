@@ -1,11 +1,16 @@
-# ArgoCD Application para a stack "eu-comida" (app + MySQL + RabbitMQ).
+# ArgoCD Application para o componente da aplicação "eu-comida" (Deployment + Service).
 # Este manifesto é aplicado UMA VEZ diretamente no cluster (namespace argocd).
-# A partir daí, o ArgoCD passa a sincronizar automaticamente tudo que estiver
-# em k8s/ neste repositório (branch main) — o repo é a fonte de verdade.
+# A partir daí, o ArgoCD passa a sincronizar automaticamente k8s/app.yaml
+# neste repositório (branch main) — o repo é a fonte de verdade.
+#
+# Separado das Applications de MySQL/RabbitMQ (eu-comida-mysql, eu-comida-rabbitmq)
+# porque este componente é STATELESS e muda a cada push na main (nova imagem
+# publicada pelo CI). Isolar o app evita que o ciclo de deploy dele afete o
+# status/sync da infraestrutura, e vice-versa.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: eu-comida
+  name: eu-comida-app
   namespace: argocd
 spec:
   project: default
@@ -14,6 +19,8 @@ spec:
     repoURL: https://github.com/cadugr/eucomida.git
     targetRevision: main
     path: k8s
+    directory:
+      include: "app.yaml"
 
   destination:
     server: https://kubernetes.default.svc
@@ -21,7 +28,7 @@ spec:
 
   syncPolicy:
     automated:
-      prune: true      # remove do cluster recursos removidos do Git
-      selfHeal: true    # reverte mudanças manuais feitas direto no cluster
+      prune: true       # ok remover recursos do app removidos do Git: é stateless, barato recriar
+      selfHeal: true     # reverte mudanças manuais feitas direto no cluster
     syncOptions:
       - CreateNamespace=true   # cria o namespace "eucomida" automaticamente
