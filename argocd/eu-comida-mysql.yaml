@@ -25,7 +25,9 @@ spec:
     targetRevision: main
     path: k8s
     directory:
-      include: "mysql.yaml"
+      # Glob para pegar tanto o Deployment/Service/PVC quanto o
+      # ExternalSecret que materializa as credenciais vindas do Vault.
+      include: "mysql*.yaml"
 
   destination:
     server: https://kubernetes.default.svc

@@ -25,7 +25,9 @@ spec:
     targetRevision: main
     path: k8s
     directory:
-      include: "rabbitmq.yaml"
+      # Glob para pegar tanto o Deployment/Services/PVC quanto o
+      # ExternalSecret que materializa as credenciais vindas do Vault.
+      include: "rabbitmq*.yaml"
 
   destination:
     server: https://kubernetes.default.svc

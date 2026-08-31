@@ -33,13 +33,25 @@ spec:
         - name: SPRING_PROFILES_ACTIVE
           value: k3d
         - name: SPRING_DATASOURCE_USERNAME
-          value: "eucomida_user"
+          valueFrom:
+            secretKeyRef:
+              name: app-credentials
+              key: mysql-username
         - name: SPRING_DATASOURCE_PASSWORD
-          value: "eucomida_pass"
+          valueFrom:
+            secretKeyRef:
+              name: app-credentials
+              key: mysql-password
         - name: SPRING_RABBITMQ_USERNAME
-          value: "rabbitmq"
+          valueFrom:
+            secretKeyRef:
+              name: app-credentials
+              key: rabbitmq-username
         - name: SPRING_RABBITMQ_PASSWORD
-          value: "rabbitmq"
+          valueFrom:
+            secretKeyRef:
+              name: app-credentials
+              key: rabbitmq-password
 ---
 # LoadBalancer Service to expose the eu-comida application
 apiVersion: v1
