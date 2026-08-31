@@ -46,6 +46,11 @@ metadata:
   name: rabbitmq
 spec:
   replicas: 1
+  # RollingUpdate (padrão) tenta subir o pod novo ANTES de matar o antigo —
+  # trava para sempre com PVC ReadWriteOnce (só monta num pod por vez).
+  # Recreate mata o pod antigo primeiro, liberando o volume para o novo.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: rabbitmq
