@@ -20,7 +20,9 @@ spec:
     targetRevision: main
     path: k8s
     directory:
-      include: "app.yaml"
+      # Glob para pegar tanto o Deployment/Service quanto o ExternalSecret
+      # que materializa as credenciais vindas do Vault.
+      include: "app*.yaml"
 
   destination:
     server: https://kubernetes.default.svc
