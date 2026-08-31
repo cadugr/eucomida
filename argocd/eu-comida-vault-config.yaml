@@ -1,0 +1,28 @@
+# ArgoCD Application para os recursos Kubernetes que ligam o ESO ao Vault
+# (ClusterSecretStore, e futuramente os ExternalSecret do Passo 3).
+# Separado das Applications "eu-comida-vault" (Helm chart do Vault em si) e
+# "eu-comida-external-secrets" (Helm chart do operator) porque esta aqui é
+# só "cola" declarativa entre os dois — plain YAML, não Helm.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eu-comida-vault-config
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/cadugr/eucomida.git
+    targetRevision: main
+    path: vault/config
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: external-secrets-system
+
+  syncPolicy:
+    automated:
+      prune: true       # config declarativa, sem estado — ok remover se sair do Git
+      selfHeal: true     # reverte mudanças manuais feitas direto no cluster
+    syncOptions:
+      - CreateNamespace=true
