@@ -1,0 +1,65 @@
+# ArgoCD Application para o HashiCorp Vault (via Helm chart oficial).
+# Este manifesto é aplicado UMA VEZ diretamente no cluster (namespace argocd)
+# — ou, a partir do workflow de CD, automaticamente a cada push na main que
+# toque algo em argocd/. A partir daí, o ArgoCD sincroniza o chart.
+#
+# Namespace DEDICADO ("vault"), separado de "eucomida" e "eucomida-infra":
+# o Vault não é infraestrutura específica do eu-comida, é infraestrutura de
+# plataforma (guarda as credenciais de tudo o resto), e merece o isolamento
+# mais forte de todos os componentes.
+#
+# Modo "standalone" com armazenamento persistente (PVC) — dados sobrevivem a
+# um restart do pod, mas diferente do MySQL/RabbitMQ, o Vault SELA os dados
+# automaticamente a cada restart por design (segurança). Depois de qualquer
+# restart do pod, é necessário desbloquear manualmente:
+#   kubectl exec -n vault vault-0 -- vault operator unseal
+# (repetir 3x com unseal keys distintas — geradas no `vault operator init`,
+# que só precisa ser executado UMA VEZ, na primeira subida).
+#
+# UI habilitada, mas o Service continua ClusterIP (sem LoadBalancer) — o
+# Vault guarda os segredos de tudo, não expomos a porta 8200 publicamente.
+# Acesso administrativo via:
+#   kubectl port-forward svc/vault -n vault 8200:8200
+#
+# injector.enabled=false por enquanto: a injeção de segredos nos pods do
+# app/MySQL/RabbitMQ (via Vault Agent Injector ou External Secrets Operator)
+# é uma decisão separada, ainda não tomada — este manifesto só sobe o Vault
+# em si.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eu-comida-vault
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://helm.releases.hashicorp.com
+    chart: vault
+    targetRevision: "0.34.1"
+    helm:
+      values: |
+        server:
+          standalone:
+            enabled: true
+          dataStorage:
+            enabled: true
+            size: 1Gi
+          service:
+            type: ClusterIP
+        ui:
+          enabled: true
+          serviceType: ClusterIP
+        injector:
+          enabled: false
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vault
+
+  syncPolicy:
+    automated:
+      prune: false      # protege o PVC/dados do Vault de remoção acidental via Git
+      selfHeal: true     # reverte mudanças manuais feitas direto no cluster
+    syncOptions:
+      - CreateNamespace=true   # cria o namespace "vault" automaticamente
